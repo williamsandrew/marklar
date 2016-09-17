@@ -14,5 +14,7 @@ fn main() {
 
     assert!(expression("1!=2").is_ok());
     assert!(expression("1!= 2").is_ok());
-    assert!(expression("1 != 2").is_ok());
+    assert!(expression("1\t!= 2").is_ok());
+
+    println!("{:?}", expression("1==1").unwrap().expression);
 }
