@@ -1,0 +1,35 @@
+use std::str::FromStr;
+
+use ast::*;
+use ast::eq::*;
+use ast::neq::*;
+use ast::number::*;
+use ast::boolean::*;
+
+// Whitespace
+__
+    = [ \t]*
+
+number -> NodeNumber
+    = n:([0-9]+ { i64::from_str(match_str).unwrap() }) __ { NodeNumber::new(n) }
+
+boolean -> NodeBoolean
+    = "true"  __ { NodeBoolean::new(true)  }
+    / "false" __ { NodeBoolean::new(false) }
+
+atom -> Box<Node>
+    = t:boolean { Box::new(t) }
+    / t:number  { Box::new(t) }
+
+equals -> Box<NodeEq>
+    = l:atom "==" __ r:atom { Box::new(NodeEq::new(l, r)) }
+
+not_equals -> Box<NodeNeq>
+    = l:atom "!=" __ r:atom { Box::new(NodeNeq::new(l, r)) }
+
+
+#[pub]
+expression -> Machine
+    = __ 
+      e:equals     { Machine::new(e) }
+    / e:not_equals { Machine::new(e) }
