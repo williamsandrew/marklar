@@ -14,13 +14,17 @@ fn main() {
 
     assert!(machine("1+1").is_ok());
     assert!(machine("2 == 1 + 1").is_ok());
-    assert!(machine("1 + 1 == 2").is_ok());
+    assert!(machine("1!=2").is_ok());
+    assert!(machine("1!= 2").is_ok());
+    assert!(machine("1\t!= 2").is_ok());
 
+    assert!(machine("1 + 1 == 2").is_ok());
     assert!(machine("1 + 1 + 2").is_ok());
 
-    // assert!(machine("1!=2").is_ok());
-    // assert!(machine("1!= 2").is_ok());
-    // assert!(machine("1\t!= 2").is_ok());
+    assert!(machine("1 * 2").is_ok());
+    assert!(machine("1 / 2").is_ok());
+
+    assert!(machine("1 * 2 + 1").is_ok());
 }
 
 #[test]

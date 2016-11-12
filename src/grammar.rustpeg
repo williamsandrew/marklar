@@ -11,9 +11,10 @@ __
     = [ \t]*
 
 expr -> Box<Node>
-    = t:equals  { t }
-    / t:term    { t }
-    / t:atom    { t }
+    = t:equality { t }
+    / t:term     { t }
+    / t:factor   { t }
+    / t:atom     { t }
 
 
 number -> NodeNumber
@@ -33,17 +34,36 @@ atom -> Box<Node>
 equals -> Box<Node>
     = l:(term / atom) __ "==" __ r:expr { Box::new(NodeEq::new(l, r)) }
 
+not_equals -> Box<Node>
+    = l:(term / atom) __ "!=" __ r:expr { Box::new(NodeNeq::new(l, r)) }
+
+equality -> Box<Node>
+    = t:equals     { t }
+    / t:not_equals { t }
+
 
 // Terms
 addition -> Box<Node>
-    = l:atom __ "+" __ r:(term / atom) { Box::new(NodeAdd::new(l, r)) }
+    = l:(factor / atom) __ "+" __ r:expr { Box::new(NodeAdd::new(l, r)) }
 
 subtraction -> Box<Node>
-    = l:atom __ "-" __ r:(term / atom) { Box::new(NodeAdd::new(l, r)) }
+    = l:(factor / atom) __ "-" __ r:expr { Box::new(NodeAdd::new(l, r)) }
 
 term -> Box<Node>
     = t:addition    { t }
     / t:subtraction { t }
+
+
+// Factors
+multiply -> Box<Node>
+    = l:atom __ "*" __ r:(factor / atom) { Box::new(NodeAdd::new(l, r)) }
+
+divide -> Box<Node>
+    = l:atom __ "/" __ r:(factor / atom) { Box::new(NodeAdd::new(l, r)) }
+
+factor -> Box<Node>
+    = t:multiply { t }
+    / t:divide   { t }
 
 
 #[pub]
