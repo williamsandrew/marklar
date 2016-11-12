@@ -3,12 +3,18 @@ use std::str::FromStr;
 use ast::*;
 use ast::eq::*;
 use ast::neq::*;
+use ast::add::*;
 use ast::number::*;
 use ast::boolean::*;
 
-// Whitespace
 __
     = [ \t]*
+
+expr -> Box<Node>
+    = t:equals  { t }
+    / t:term    { t }
+    / t:atom    { t }
+
 
 number -> NodeNumber
     = n:([0-9]+ { i64::from_str(match_str).unwrap() }) __ { NodeNumber::new(n) }
@@ -18,18 +24,28 @@ boolean -> NodeBoolean
     / "false" __ { NodeBoolean::new(false) }
 
 atom -> Box<Node>
-    = t:boolean { Box::new(t) }
-    / t:number  { Box::new(t) }
+    = t:boolean    { Box::new(t) }
+    / t:number     { Box::new(t) }
+    / "(" __ t:expr __ ")" { t }
 
-equals -> Box<NodeEq>
-    = l:atom "==" __ r:atom { Box::new(NodeEq::new(l, r)) }
 
-not_equals -> Box<NodeNeq>
-    = l:atom "!=" __ r:atom { Box::new(NodeNeq::new(l, r)) }
+// Equality
+equals -> Box<Node>
+    = l:(term / atom) __ "==" __ r:expr { Box::new(NodeEq::new(l, r)) }
+
+
+// Terms
+addition -> Box<Node>
+    = l:atom __ "+" __ r:(term / atom) { Box::new(NodeAdd::new(l, r)) }
+
+subtraction -> Box<Node>
+    = l:atom __ "-" __ r:(term / atom) { Box::new(NodeAdd::new(l, r)) }
+
+term -> Box<Node>
+    = t:addition    { t }
+    / t:subtraction { t }
 
 
 #[pub]
-expression -> Machine
-    = __ 
-      e:equals     { Machine::new(e) }
-    / e:not_equals { Machine::new(e) }
+machine -> Machine
+    = __ e:expr __ { Machine::new(e) }

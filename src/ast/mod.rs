@@ -4,6 +4,7 @@ use std::fmt;
 pub mod eq;
 pub mod neq;
 pub mod number;
+pub mod add;
 pub mod boolean;
 
 pub trait Node {
