@@ -47,7 +47,7 @@ addition -> Box<Node>
     = l:(factor / atom) __ "+" __ r:expr { Box::new(NodeAdd::new(l, r)) }
 
 subtraction -> Box<Node>
-    = l:(factor / atom) __ "-" __ r:expr { Box::new(NodeAdd::new(l, r)) }
+    = l:(factor / atom) __ "-" __ r:expr { Box::new(NodeSub::new(l, r)) }
 
 term -> Box<Node>
     = t:addition    { t }

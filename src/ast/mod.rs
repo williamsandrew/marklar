@@ -5,6 +5,7 @@ pub mod eq;
 pub mod neq;
 pub mod number;
 pub mod add;
+pub mod sub;
 pub mod boolean;
 
 pub trait Node {

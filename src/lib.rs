@@ -36,7 +36,12 @@ fn primitives() {
 
 #[test]
 fn grouping() {
+    assert!(machine("((((1))))").is_ok());  // XXX This takes several seconds to parse
+
     assert!(machine("(false)").is_ok());
+    assert!(machine("(1)").is_ok());
     assert!(machine("(1==1) + 1").is_ok());
-    assert!(machine("((1==1) + 1) - 2").is_ok());
+    assert!(machine("((1-2) + 1) == 2").is_ok());
+    println!("Testing: {}", "((1-2) + 1) == 2");
+    println!("{:?}", machine("((1-2) + 1) == 2"));
 }
