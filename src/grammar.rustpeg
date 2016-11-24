@@ -1,71 +1,81 @@
 use std::str::FromStr;
 
-use ast::*;
+use ast::{Machine,Expression,Node};
 use ast::eq::*;
 use ast::neq::*;
 use ast::add::*;
+use ast::sub::*;
+use ast::not::*;
+use ast::mult::*;
+use ast::div::*;
 use ast::number::*;
 use ast::boolean::*;
 
-__
+__ -> ()
     = [ \t]*
 
-expr -> Box<Node>
+expr -> Box<Expression>
     = t:equality { t }
     / t:term     { t }
     / t:factor   { t }
     / t:atom     { t }
+    / t:negate   { t }
 
 
-number -> NodeNumber
-    = n:([0-9]+ { i64::from_str(match_str).unwrap() }) __ { NodeNumber::new(n) }
+number -> Box<Expression>
+    = n:([0-9]+ { i64::from_str(match_str).unwrap() }) { box Expression::Number(NodeNumber::new(n)) }
 
-boolean -> NodeBoolean
-    = "true"  __ { NodeBoolean::new(true)  }
-    / "false" __ { NodeBoolean::new(false) }
+boolean -> Box<Expression>
+    = "true"  { box Expression::Boolean(NodeBoolean::new(true))  }
+    / "false" { box Expression::Boolean(NodeBoolean::new(false)) }
 
-atom -> Box<Node>
-    = t:boolean    { Box::new(t) }
-    / t:number     { Box::new(t) }
+atom -> Box<Expression>
+    = t:boolean    { t }
+    / t:number     { t }
     / "(" __ t:expr __ ")" { t }
 
 
+// Unary
+negate -> Box<Expression>
+    = "!" __ t:atom { box Expression::Not(box NodeNot::new(t)) }
+
+
 // Equality
-equals -> Box<Node>
-    = l:(term / atom) __ "==" __ r:expr { Box::new(NodeEq::new(l, r)) }
+equals -> Box<Expression>
+    = l:(term / atom) __ "==" __ r:expr { box Expression::Equals(box NodeEq::new(l, r)) }
 
-not_equals -> Box<Node>
-    = l:(term / atom) __ "!=" __ r:expr { Box::new(NodeNeq::new(l, r)) }
+not_equals -> Box<Expression>
+    = l:(term / atom) __ "!=" __ r:expr { box Expression::NotEquals(box NodeNeq::new(l, r)) }
 
-equality -> Box<Node>
+equality -> Box<Expression>
     = t:equals     { t }
     / t:not_equals { t }
 
 
 // Terms
-addition -> Box<Node>
-    = l:(factor / atom) __ "+" __ r:expr { Box::new(NodeAdd::new(l, r)) }
+addition -> Box<Expression>
+    = l:(factor / atom) __ "+" __ r:expr { box Expression::Add(box NodeAdd::new(l, r)) }
 
-subtraction -> Box<Node>
-    = l:(factor / atom) __ "-" __ r:expr { Box::new(NodeSub::new(l, r)) }
+subtraction -> Box<Expression>
+    = l:(factor / atom) __ "-" __ r:expr { box Expression::Subtract(box NodeSub::new(l, r)) }
 
-term -> Box<Node>
+term -> Box<Expression>
     = t:addition    { t }
     / t:subtraction { t }
 
 
 // Factors
-multiply -> Box<Node>
-    = l:atom __ "*" __ r:(factor / atom) { Box::new(NodeAdd::new(l, r)) }
+multiply -> Box<Expression>
+    = l:atom __ "*" __ r:(factor / atom) { box Expression::Multiply(box NodeMult::new(l, r)) }
 
-divide -> Box<Node>
-    = l:atom __ "/" __ r:(factor / atom) { Box::new(NodeAdd::new(l, r)) }
+divide -> Box<Expression>
+    = l:atom __ "/" __ r:(factor / atom) { box Expression::Divide(box NodeDiv::new(l, r)) }
 
-factor -> Box<Node>
+factor -> Box<Expression>
     = t:multiply { t }
     / t:divide   { t }
 
 
 #[pub]
 machine -> Machine
-    = __ e:expr __ { Machine::new(e) }
+    = __ e:expr { Machine::new(e) }

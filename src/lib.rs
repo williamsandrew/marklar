@@ -1,5 +1,8 @@
-#![feature(plugin)]
+#![feature(plugin, box_syntax, box_patterns)]
 #![plugin(peg_syntax_ext)]
+
+#[macro_use]
+mod macros;
 
 mod ast;
 
@@ -36,8 +39,6 @@ fn primitives() {
 
 #[test]
 fn grouping() {
-    assert!(machine("((((1))))").is_ok());  // XXX This takes several seconds to parse
-
     assert!(machine("(false)").is_ok());
     assert!(machine("(1)").is_ok());
     assert!(machine("(1==1) + 1").is_ok());
@@ -45,3 +46,18 @@ fn grouping() {
     println!("Testing: {}", "((1-2) + 1) == 2");
     println!("{:?}", machine("((1-2) + 1) == 2"));
 }
+
+#[test]
+fn unary() {
+    assert!(machine("!1").is_ok());
+    assert!(machine("! 1").is_ok());
+    assert!(machine("! (1+1)").is_ok());
+    assert!(machine("true == !false").is_ok());
+}
+
+#[test]
+#[cfg_attr(not(feature = "slow"), ignore)]
+fn slow() {
+    println!("{:?}", machine("((((1+1))))")); // This takes over 60 seconds to complete
+}
+
